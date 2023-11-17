@@ -1,5 +1,27 @@
 # ELF-Crackme
 
+## Level 1.0 writeup
+
+- 首先查看可执行文件的 ELF Header
+
+  ![image-20231117155426496](./resources/elf-1.0-header.png)
+
+- 可以发现如下问题：
+
+  - Class 错误：应为`ELF64`
+  - ~~OS 错误：~~其实没错，`Linux`确实属于`UNIX`类系统
+  - Machine 错误：修改为 `Advanced Micro Devices x86-64 (AMD64)`
+  - program & section header 错误：会随着 Class 修正自动修正
+
+- **修正：** 查询 ELF 组成
+
+  - ELF Header 中元素位置，值对应属性：[ELF Wiki](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
+  - 文件修改：`./utility.py`
+
+- 修正后再次 `readelf -h elf-crackme-1.0` 如下：
+
+  ![image-20231117160151682](.\resources\elf-1.0-correct.png)
+
 ## Level 3.0 writeup
 
 - 关于动态链接，参见以下参考文档：
@@ -10,13 +32,13 @@
 
 - 其中，重点关注如下图片：
 
-  ![img](.\resources\elf-dynamic-linkage.png)
+  ![img](./resources/elf-dynamic-linkage.png)
 
   图1.1 动态链接流程图
 
-  ![img](.\resources\elf-dynamic-linkage-1.png)
+  ![img](./resources/elf-dynamic-linkage-1.png)
   
-  ![img](.\resources\elf-dynamic-linkage-2.png)
+  ![img](./resources/elf-dynamic-linkage-2.png)
   
   图片来自 **CSAPP** (不知道第几章)， 展示了一次动态链接过程，其中有以下几点值得关注：
   
@@ -30,11 +52,11 @@
 
   2. 找到 main 函数；
 
-     ![image-20231115171557612](.\resources\elf-dynamic-linker-main.png)
+     ![image-20231115171557612](./resources/elf-dynamic-linker-main.png)
 
   3. 找到对应的 read_flag 函数；
 
-     ![image-20231115171904718](.\resources\elf-dynamic-linker-read-flag.png)
+     ![image-20231115171904718](./resources/elf-dynamic-linker-read-flag.png)
 
   4. 对照 C 代码分析 read_flag 的代码，可以找到指向 execve 的 call 指令。在该条指令之前的一部分操作目的为存储待传递的参数。
 
@@ -95,19 +117,19 @@
 
   2. 从 Section Headers 信息中可以看到，`.plt` 节开始地址为`0x08048340`， 偏移为`0x00000340`；
 
-     ![image-20231115212406050](.\resources\elf-dynamic-linker-plt.png)
+     ![image-20231115212406050](./resources/elf-dynamic-linker-plt.png)
 
   3. 由此可以计算出正确的`PLT[0]`位置为`0x0340`，需修改的指令位置为`0x039C`；
 
   4. 打开 010 editor，找到`0x039C`位置，可以观察到其机器码为`E9 AA FF FF FF`，为近距离 JMP 的小端格式，与上文中汇编代码对应；
 
-     ![image-20231115212844543](D:\codes\Software_security\Software_Security_Course\pwn-notes\resources\elf-dynamic-linker-machine-code.png)
+     ![image-20231115212844543](D:/codes/Software_security/Software_Security_Course/pwn-notes/resources/elf-dynamic-linker-machine-code.png)
 
   5. 计算可得，机器码中当前 JMP 目标位置为 `IP-0x56 ` ，实际正确目标位置应为 `IP-0x60`，因此将 `0x039D`位置的 AA 修改为 A0， **解题完毕**。
 
      完成题目效果如下所示：
 
-     ![image-20231115172115578](.\resources\elf-dynamic-linker-final.png)
+     ![image-20231115172115578](./resources/elf-dynamic-linker-final.png)
 
      其中，No such file or directory 问题可以将目录切换至/usr/bin下再执行该程序来解决。
 
@@ -115,13 +137,13 @@
 
   如果修改 id， 报错如下所示：
 
-  ![image-20231115172051743](.\resources\elf-dynamic-linker-change-id.png)
+  ![image-20231115172051743](./resources/elf-dynamic-linker-change-id.png)
 
 ---
 
 ## Level 3.1 Writeup
 
-![image-20231115215320677](.\resources\elf-dynamic-linker-plt-start.png)
+![image-20231115215320677](./resources/elf-dynamic-linker-plt-start.png)
 
 如图，由3.0可知，应该 JMP 到GOT[2]，但此处 JMP 目标为 GOT[0]，错误。
 
