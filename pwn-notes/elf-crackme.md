@@ -123,7 +123,7 @@
 
   4. 打开 010 editor，找到`0x039C`位置，可以观察到其机器码为`E9 AA FF FF FF`，为近距离 JMP 的小端格式，与上文中汇编代码对应；
 
-     ![image-20231115212844543](D:/codes/Software_security/Software_Security_Course/pwn-notes/resources/elf-dynamic-linker-machine-code.png)
+     ![image-20231115212844543](./resources/elf-dynamic-linker-machine-code.png)
 
   5. 计算可得，机器码中当前 JMP 目标位置为 `IP-0x56 ` ，实际正确目标位置应为 `IP-0x60`，因此将 `0x039D`位置的 AA 修改为 A0， **解题完毕**。
 
