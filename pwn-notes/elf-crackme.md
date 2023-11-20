@@ -20,7 +20,7 @@
 
 - 修正后再次 `readelf -h elf-crackme-1.0` 如下：
 
-  ![image-20231117160151682](.\resources\elf-1.0-correct.png)
+  ![image-20231117160151682](./resources/elf-1.0-correct.png)
 
 ## Level 3.0 writeup
 
